@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -26,12 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+@SuppressWarnings("serial")
 public class LionRay extends JFrame
 {
 	public static int sampleRate = 32768;
 	
-	public static void main(String[] args) throws Exception
-	{
+	public static void main(String[] args) throws Exception {
 		new LionRay();
 	}
 	
@@ -48,8 +49,7 @@ public class LionRay extends JFrame
 		DFPWM converter = new DFPWM();
 		
 		int read;
-		while ((read = in.read(readBuffer)) > 0)
-		{
+		while ((read = in.read(readBuffer)) > 0) {
 			converter.compress(outBuffer, readBuffer, 0, 0, read/8);
 		    outFile.write(outBuffer, 0, read/8);
 		}
@@ -59,10 +59,17 @@ public class LionRay extends JFrame
 	private JLabel labelInputFile, labelOutputFile, labelRate;
 	public static JTextField textInputFile, textOutputFile;
 	private JButton buttonBrowseInput, buttonBrowseOutput, buttonConvert;
+	private Container pane;
+	private GridBagConstraints c;
 	public static JSpinner textRate;
-
-	private LionRay()
-	{
+	
+	private void addCtrl(int x, int y, Component something) {
+		c.gridx = x;
+		c.gridy = y;
+		pane.add(something, c);
+	}
+	
+	private LionRay() {
 		labelInputFile = new JLabel("Input File: ", SwingConstants.LEFT);
 		labelOutputFile = new JLabel("Output File: ", SwingConstants.LEFT);
 		
@@ -82,47 +89,30 @@ public class LionRay extends JFrame
 		buttonConvert = new JButton("Convert");
 		buttonConvert.addActionListener(new convertListener()); 
 		
-		Container pane = getContentPane();
+		pane = getContentPane();
 		pane.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
+		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(1,1,1,1);
 		
-		c.gridx = 0;
-		c.gridy = 0;
-		c.weightx = 0;
-		pane.add(labelInputFile, c);
-		c.gridx = 1;
-		c.gridy = 0;
+		addCtrl(0, 0, labelInputFile);
 		c.weightx = 0.5;
-		pane.add(textInputFile, c);
-		c.gridx = 2;
-		c.gridy = 0;
+		addCtrl(1, 0, textInputFile);
 		c.weightx = 0;
-		pane.add(buttonBrowseInput, c);
-		c.gridx = 0;
-		c.gridy = 1;
-		pane.add(labelOutputFile, c);
-		c.gridx = 1;
-		c.gridy = 1;
-		pane.add(textOutputFile, c);
-		c.gridx = 2;
-		c.gridy = 1;
-		pane.add(buttonBrowseOutput,c);
-		c.gridx = 0;
-		c.gridy = 2;
-		pane.add(labelRate, c);
-		c.gridx = 1;
-		c.gridy = 2;
+		addCtrl(2, 0, buttonBrowseInput);
+		addCtrl(0, 1, labelOutputFile);
+		addCtrl(1, 1, textOutputFile);
+		addCtrl(2, 1, buttonBrowseOutput);
+		addCtrl(0, 2, labelRate);
 		c.gridwidth = 2;
-		pane.add(textRate, c);
-		c.gridx = 0;
-		c.gridy = 3;
+		addCtrl(1, 2, textRate);
 		c.gridwidth = 3;
-		pane.add(buttonConvert, c);
+		addCtrl(0, 3, buttonConvert);
 		
 		setTitle("LionRay Wav Converter");
-		setSize(400,128);
+		pack();
+		setSize(400,getSize().height);
+		setResizable(false);
 		setLocationRelativeTo(null);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -134,8 +124,7 @@ class inputBrowseListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fileChooser = new JFileChooser(new File("."));
 		fileChooser.setDialogTitle("Select file to convert");
-		fileChooser.setFileFilter(new FileNameExtensionFilter(
-			"WAV audio files", "wav"));
+		fileChooser.setFileFilter(new FileNameExtensionFilter("WAV audio files", "wav"));
 		if(fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 			return;
 		LionRay.textInputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -147,8 +136,7 @@ class outputBrowseListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fileChooser = new JFileChooser(new File("."));
 		fileChooser.setDialogTitle("Select output file");
-		fileChooser.setFileFilter(new FileNameExtensionFilter(
-			"DFPWM audio files", "dfpwm"));
+		fileChooser.setFileFilter(new FileNameExtensionFilter("DFPWM audio files", "dfpwm"));
 		if(fileChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION)
 			return;
 		LionRay.textOutputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -159,8 +147,7 @@ class convertListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		LionRay.sampleRate = (int) LionRay.textRate.getValue();
-		if ((int) LionRay.textRate.getValue() < 0)
-		{
+		if ((int) LionRay.textRate.getValue() < 0) {
 			JOptionPane.showMessageDialog(null, "Sample rate cannot be negative");
 			return;
 		}
@@ -194,4 +181,3 @@ class convertListener implements ActionListener {
 		}
 	}
 }
-
