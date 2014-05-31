@@ -10,14 +10,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +28,7 @@ import java.io.IOException;
 
 public class LionRay extends JFrame
 {
-	private static float sampleRate = 32768;
+	public static int sampleRate = 32768;
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -56,9 +56,10 @@ public class LionRay extends JFrame
 		outFile.close();
 	}
 
-	private JLabel labelInputFile, labelOutputFile;
+	private JLabel labelInputFile, labelOutputFile, labelRate;
 	public static JTextField textInputFile, textOutputFile;
 	private JButton buttonBrowseInput, buttonBrowseOutput, buttonConvert;
+	public static JSpinner textRate;
 
 	private LionRay()
 	{
@@ -72,6 +73,11 @@ public class LionRay extends JFrame
 		buttonBrowseOutput = new JButton("Browse");
 		buttonBrowseInput.addActionListener(new inputBrowseListener()); 
 		buttonBrowseOutput.addActionListener(new outputBrowseListener()); 
+		
+		labelRate = new JLabel("Samplerate: ");
+		textRate = new JSpinner(new SpinnerNumberModel());
+		textRate.setEditor(new JSpinner.NumberEditor(textRate, "#"));
+		textRate.setValue(sampleRate);
 		
 		buttonConvert = new JButton("Convert");
 		buttonConvert.addActionListener(new convertListener()); 
@@ -105,11 +111,18 @@ public class LionRay extends JFrame
 		pane.add(buttonBrowseOutput,c);
 		c.gridx = 0;
 		c.gridy = 2;
+		pane.add(labelRate, c);
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		pane.add(textRate, c);
+		c.gridx = 0;
+		c.gridy = 3;
 		c.gridwidth = 3;
 		pane.add(buttonConvert, c);
 		
 		setTitle("LionRay Wav Converter");
-		setSize(400,107);
+		setSize(400,128);
 		setLocationRelativeTo(null);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -145,6 +158,17 @@ class outputBrowseListener implements ActionListener {
 class convertListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		LionRay.sampleRate = (int) LionRay.textRate.getValue();
+		if ((int) LionRay.textRate.getValue() < 0)
+		{
+			JOptionPane.showMessageDialog(null, "Sample rate cannot be negative");
+			return;
+		}
+		if ((int) LionRay.textRate.getValue() < 8192)
+			JOptionPane.showMessageDialog(null, "Warning, sample rate too low for Computronics");
+		if ((int) LionRay.textRate.getValue() > 65536)
+			JOptionPane.showMessageDialog(null, "Warning, sample rate too high for Computronics");
+		
 		if (LionRay.textInputFile.getText().trim().equals(""))
 			JOptionPane.showMessageDialog(null, "No file specified for input");
 		else if (!new File(LionRay.textInputFile.getText()).exists())
@@ -170,3 +194,4 @@ class convertListener implements ActionListener {
 		}
 	}
 }
+
