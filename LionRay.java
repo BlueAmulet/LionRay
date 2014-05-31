@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Component;
 import java.awt.Container;
@@ -31,70 +30,66 @@ import java.io.IOException;
 public class LionRay extends JFrame
 {
 	public static int sampleRate = 32768;
-	
+
 	public static void main(String[] args) throws Exception {
 		new LionRay();
 	}
-	
+
 	public static void convert(String inputFilename, String outputFilename) throws UnsupportedAudioFileException, IOException {
-		File inputFile = new File(inputFilename);
 		AudioFormat convertFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sampleRate, 8, 1, 1, sampleRate, false);
-		AudioInputStream unconverted = AudioSystem.getAudioInputStream(inputFile);
-		AudioInputStream in = AudioSystem.getAudioInputStream(convertFormat, unconverted);
-		
+		AudioInputStream unconverted = AudioSystem.getAudioInputStream(new File(inputFilename));
+		AudioInputStream inFile = AudioSystem.getAudioInputStream(convertFormat, unconverted);
 		BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(outputFilename));
-		
+
 		byte[] readBuffer = new byte[1024];
 		byte[] outBuffer = new byte[1024/8];
 		DFPWM converter = new DFPWM();
-		
+
 		int read;
-		while ((read = in.read(readBuffer)) > 0) {
+		while ((read = inFile.read(readBuffer)) > 0) {
 			converter.compress(outBuffer, readBuffer, 0, 0, read/8);
 		    outFile.write(outBuffer, 0, read/8);
 		}
 		outFile.close();
 	}
 
-	private JLabel labelInputFile, labelOutputFile, labelRate;
 	public static JTextField textInputFile, textOutputFile;
-	private JButton buttonBrowseInput, buttonBrowseOutput, buttonConvert;
 	private Container pane;
 	private GridBagConstraints c;
 	public static JSpinner textRate;
-	
+
 	private void addCtrl(int x, int y, Component something) {
 		c.gridx = x;
 		c.gridy = y;
 		pane.add(something, c);
 	}
-	
+
 	private LionRay() {
-		labelInputFile = new JLabel("Input File: ", SwingConstants.LEFT);
-		labelOutputFile = new JLabel("Output File: ", SwingConstants.LEFT);
-		
+		JLabel labelInputFile = new JLabel("Input File: ");
+		JLabel labelOutputFile = new JLabel("Output File: ");
+
 		textInputFile = new JTextField();
 		textOutputFile = new JTextField();
-		
-		buttonBrowseInput = new JButton("Browse");
-		buttonBrowseOutput = new JButton("Browse");
-		buttonBrowseInput.addActionListener(new inputBrowseListener()); 
-		buttonBrowseOutput.addActionListener(new outputBrowseListener()); 
-		
-		labelRate = new JLabel("Samplerate: ");
+
+		JButton buttonBrowseInput = new JButton("Browse");
+		JButton buttonBrowseOutput = new JButton("Browse");
+		buttonBrowseInput.addActionListener(new inputBrowseListener());
+		buttonBrowseOutput.addActionListener(new outputBrowseListener());
+
+		JLabel labelRate = new JLabel("Samplerate: ");
 		textRate = new JSpinner(new SpinnerNumberModel());
 		textRate.setEditor(new JSpinner.NumberEditor(textRate, "#"));
 		textRate.setValue(sampleRate);
-		
-		buttonConvert = new JButton("Convert");
-		buttonConvert.addActionListener(new convertListener()); 
-		
+
+		JButton buttonConvert = new JButton("Convert");
+		buttonConvert.addActionListener(new convertListener());
+
 		pane = getContentPane();
 		pane.setLayout(new GridBagLayout());
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(1,1,1,1);
-		
+
 		addCtrl(0, 0, labelInputFile);
 		c.weightx = 0.5;
 		addCtrl(1, 0, textInputFile);
@@ -108,7 +103,7 @@ public class LionRay extends JFrame
 		addCtrl(1, 2, textRate);
 		c.gridwidth = 3;
 		addCtrl(0, 3, buttonConvert);
-		
+
 		setTitle("LionRay Wav Converter");
 		pack();
 		setSize(400,getSize().height);
@@ -155,7 +150,7 @@ class convertListener implements ActionListener {
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too low for Computronics");
 		if ((int) LionRay.textRate.getValue() > 65536)
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too high for Computronics");
-		
+
 		if (LionRay.textInputFile.getText().trim().equals(""))
 			JOptionPane.showMessageDialog(null, "No file specified for input");
 		else if (!new File(LionRay.textInputFile.getText()).exists())
@@ -181,3 +176,4 @@ class convertListener implements ActionListener {
 		}
 	}
 }
+
