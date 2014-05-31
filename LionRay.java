@@ -5,17 +5,20 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FileDialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -24,15 +27,18 @@ import java.awt.event.ActionListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class LionRay extends JFrame
 {
 	public static int sampleRate = 32768;
+	public static LionRay LionRayJFrame;
 
 	public static void main(String[] args) throws Exception {
-		new LionRay();
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		LionRayJFrame = new LionRay();
 	}
 
 	public static void convert(String inputFilename, String outputFilename) throws UnsupportedAudioFileException, IOException {
@@ -65,6 +71,11 @@ public class LionRay extends JFrame
 	}
 
 	private LionRay() {
+		JPanel contentPanel = new JPanel();
+		Border padding = BorderFactory.createEmptyBorder(2, 4, 2, 4);
+		contentPanel.setBorder(padding);
+		setContentPane(contentPanel);
+		
 		JLabel labelInputFile = new JLabel("Input File: ");
 		JLabel labelOutputFile = new JLabel("Output File: ");
 
@@ -88,7 +99,7 @@ public class LionRay extends JFrame
 		pane.setLayout(new GridBagLayout());
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.insets = new Insets(1,1,1,1);
+		c.insets = new Insets(2,2,2,2);
 
 		addCtrl(0, 0, labelInputFile);
 		c.weightx = 0.5;
@@ -117,24 +128,34 @@ public class LionRay extends JFrame
 class inputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		JFileChooser fileChooser = new JFileChooser(new File("."));
-		fileChooser.setDialogTitle("Select file to convert");
-		fileChooser.setFileFilter(new FileNameExtensionFilter("WAV audio files", "wav"));
-		if(fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+		FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select .wav file to convert", FileDialog.LOAD);
+		fileChooser.setFilenameFilter(new FilenameFilter(){
+			@Override
+			public boolean accept(File dir, String name) { return name.endsWith(".wav"); }
+		});
+		fileChooser.setDirectory(".");
+		fileChooser.setVisible(true);
+		File[] filename = fileChooser.getFiles();
+		if(filename.length == 0)
 			return;
-		LionRay.textInputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
+		LionRay.textInputFile.setText(filename[0].getAbsolutePath());
 	}
 }
 
 class outputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		JFileChooser fileChooser = new JFileChooser(new File("."));
-		fileChooser.setDialogTitle("Select output file");
-		fileChooser.setFileFilter(new FileNameExtensionFilter("DFPWM audio files", "dfpwm"));
-		if(fileChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION)
+		FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select output file", FileDialog.SAVE);
+		fileChooser.setFilenameFilter(new FilenameFilter(){
+			@Override
+			public boolean accept(File dir, String name) { return name.endsWith(".dfpwm"); }
+		});
+		fileChooser.setDirectory(".");
+		fileChooser.setVisible(true);
+		File[] filename = fileChooser.getFiles();
+		if(filename.length == 0)
 			return;
-		LionRay.textOutputFile.setText(fileChooser.getSelectedFile().getAbsolutePath());
+		LionRay.textOutputFile.setText(filename[0].getAbsolutePath());
 	}
 }
 
