@@ -22,6 +22,7 @@ import java.awt.FileDialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedOutputStream;
@@ -75,7 +76,10 @@ public class LionRay extends JFrame
 		Border padding = BorderFactory.createEmptyBorder(2, 4, 2, 4);
 		contentPanel.setBorder(padding);
 		setContentPane(contentPanel);
-		
+
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/res/icon.png")));
+
 		JLabel labelInputFile = new JLabel("Input File: ");
 		JLabel labelOutputFile = new JLabel("Output File: ");
 
@@ -121,7 +125,6 @@ public class LionRay extends JFrame
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setVisible(true);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 }
 
