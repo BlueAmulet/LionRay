@@ -225,4 +225,3 @@ class convertListener implements ActionListener {
 		}
 	}
 }
-
