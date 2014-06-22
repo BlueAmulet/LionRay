@@ -159,7 +159,7 @@ class outputBrowseListener implements ActionListener {
 
       fileChooser.setSelectedFile(new File(LionRay.textInputFile.getText().replaceFirst("\\.\\w+$", "")));
       fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
-      fileChooser.setDialogTitle("Select file to save to");
+      fileChooser.setDialogTitle("Select output file");
 
       int saveChoice = fileChooser.showSaveDialog(LionRay.LionRayJFrame);
 
