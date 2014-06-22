@@ -5,17 +5,9 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
@@ -25,11 +17,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 
 @SuppressWarnings("serial")
 public class LionRay extends JFrame
@@ -131,48 +119,85 @@ public class LionRay extends JFrame
 class inputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select .wav file to convert", FileDialog.LOAD);
-		fileChooser.setFilenameFilter(new FilenameFilter(){
-			@Override
-			public boolean accept(File dir, String name) { return name.endsWith(".wav"); }
-		});
-		fileChooser.setDirectory(".");
-		fileChooser.setVisible(true);
-		File[] filename = fileChooser.getFiles();
-		if(filename.length == 0)
-			return;
-		LionRay.textInputFile.setText(filename[0].getAbsolutePath());
+    if(System.getProperty("os.name").startsWith("Windows")) {
+      JFileChooser fileChooser = new JFileChooser(".");
+      fileChooser.setFileFilter(new FileNameExtensionFilter("Wavesound files (.wav)", "wav"));
+
+      fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
+      fileChooser.setDialogTitle("Select .wav file to convert");
+
+      int openChoice = fileChooser.showOpenDialog(LionRay.LionRayJFrame);
+
+      if(openChoice == JFileChooser.APPROVE_OPTION) {
+        File filename = fileChooser.getSelectedFile();
+        if(filename == null)
+          return;
+        LionRay.textInputFile.setText(filename.getAbsolutePath());
+      }
+    } else {
+      FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select .wav file to convert", FileDialog.LOAD);
+      fileChooser.setFilenameFilter(new FilenameFilter(){
+        @Override
+        public boolean accept(File dir, String name) { return name.endsWith(".wav"); }
+      });
+      fileChooser.setDirectory(".");
+      fileChooser.setVisible(true);
+      File[] filename = fileChooser.getFiles();
+      if(filename.length == 0)
+        return;
+      LionRay.textInputFile.setText(filename[0].getAbsolutePath());
+    }
 	}
 }
 
 class outputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select output file", FileDialog.SAVE);
-		fileChooser.setFilenameFilter(new FilenameFilter(){
-			@Override
-			public boolean accept(File dir, String name) { return name.endsWith(".dfpwm"); }
-		});
-		fileChooser.setDirectory(".");
-		fileChooser.setVisible(true);
-		File[] filename = fileChooser.getFiles();
-		if(filename.length == 0)
-			return;
-		LionRay.textOutputFile.setText(filename[0].getAbsolutePath());
+    if(System.getProperty("os.name").startsWith("Windows")) {
+      JFileChooser fileChooser = new JFileChooser(".");
+      fileChooser.setFileFilter(new FileNameExtensionFilter("DFPWM files (.dfpwm)", "dfpwm"));
+
+      fileChooser.setSelectedFile(new File(LionRay.textInputFile.getText().replaceFirst("\\.\\w+$", "")));
+      fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
+      fileChooser.setDialogTitle("Select file to save to");
+
+      int saveChoice = fileChooser.showSaveDialog(LionRay.LionRayJFrame);
+
+      if(saveChoice == JFileChooser.APPROVE_OPTION) {
+        File filename = fileChooser.getSelectedFile();
+        if(filename == null)
+          return;
+        if(!filename.getAbsolutePath().matches(".+\\.dfpwm$"))
+          filename = new File(filename.getAbsolutePath() + ".dfpwm");
+        LionRay.textOutputFile.setText(filename.getAbsolutePath());
+      }
+    } else {
+      FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select output file", FileDialog.SAVE);
+      fileChooser.setFilenameFilter(new FilenameFilter(){
+        @Override
+        public boolean accept(File dir, String name) { return name.endsWith(".dfpwm"); }
+      });
+      fileChooser.setDirectory(".");
+      fileChooser.setVisible(true);
+      File[] filename = fileChooser.getFiles();
+      if(filename.length == 0)
+        return;
+      LionRay.textOutputFile.setText(filename[0].getAbsolutePath());
+    }
 	}
 }
 
 class convertListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		LionRay.sampleRate = (int) LionRay.textRate.getValue();
-		if ((int) LionRay.textRate.getValue() < 0) {
+		LionRay.sampleRate = (Integer) LionRay.textRate.getValue();
+		if ((Integer) LionRay.textRate.getValue() < 0) {
 			JOptionPane.showMessageDialog(null, "Sample rate cannot be negative");
 			return;
 		}
-		if ((int) LionRay.textRate.getValue() < 8192)
+		if ((Integer) LionRay.textRate.getValue() < 8192)
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too low for Computronics");
-		if ((int) LionRay.textRate.getValue() > 65536)
+		if ((Integer) LionRay.textRate.getValue() > 65536)
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too high for Computronics");
 
 		if (LionRay.textInputFile.getText().trim().equals(""))
