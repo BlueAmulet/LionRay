@@ -28,7 +28,7 @@ public class LionRay extends JFrame
 	public static void main(String[] args) throws Exception {
 		if (args.length > 0) { // called with params, CLI assumed
 			String inputPath = args[0];
-			String outputPath = inputPath + ".dfpwm";
+			String outputPath = args.length > 1 ? args[1] : (inputPath + ".dfpwm");
 			
 			try {
 				convert(inputPath, outputPath);
