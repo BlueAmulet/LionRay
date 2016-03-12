@@ -26,8 +26,23 @@ public class LionRay extends JFrame
 	public static LionRay LionRayJFrame;
 
 	public static void main(String[] args) throws Exception {
-		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		LionRayJFrame = new LionRay();
+		if (args.length > 0) { // called with params, CLI assumed
+			String inputPath = args[0];
+			String outputPath = inputPath + ".dfpwm";
+			
+			try {
+				convert(inputPath, outputPath);
+			} catch (UnsupportedAudioFileException e) {
+				System.err.println("Audio format unsupported");
+				return;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		} else {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			LionRayJFrame = new LionRay();
+		}
 	}
 
 	public static void convert(String inputFilename, String outputFilename) throws UnsupportedAudioFileException, IOException {
