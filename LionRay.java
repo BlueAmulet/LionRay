@@ -22,7 +22,7 @@ import java.io.*;
 @SuppressWarnings("serial")
 public class LionRay extends JFrame
 {
-	public static int sampleRate = 32768;
+	public static int sampleRate = 48000;
 	public static LionRay LionRayJFrame;
 
 	public static void main(String[] args) throws Exception {

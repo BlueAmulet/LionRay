@@ -1,8 +1,8 @@
 /*
-DFPWM implementation in Java
+DFPWM1a implementation in Java
 operates on 8-bit signed PCM data and little-endian DFPWM data
 
-by Ben "GreaseMonkey" Russell, 2013 - Public Domain
+by Ben "GreaseMonkey" Russell, 2013, 2016 - Public Domain
 
 NOTE, len is in bytes relative to DFPWM (len*8 PCM bytes)
 also the main() function takes unsigned 8-bit data and converts it to suit
@@ -10,9 +10,10 @@ also the main() function takes unsigned 8-bit data and converts it to suit
 
 public class DFPWM
 {
-	private final int RESP_INC = 7;
-	private final int RESP_DEC = 20;
-	private final int LPF_STRENGTH = 100;
+	private final int RESP_INC = 1;
+	private final int RESP_DEC = 1;
+	private final int RESP_PREC = 10;
+	private final int LPF_STRENGTH = 140;
 
 	private int response = 0;
 	private int level = 0;
@@ -26,23 +27,30 @@ public class DFPWM
 	private void ctx_update(boolean curbit)
 	{
 		int target = (curbit ? 127 : -128);
-		int nlevel = (level + ((response*(target - level) + 128)>>8));
+		int nlevel = (level + ((response*(target - level)
+			+ (1<<(RESP_PREC-1)))>>RESP_PREC));
 		if(nlevel == level && level != target)
 			nlevel += (curbit ? 1 : -1);
-		
+
 		int rtarget, rdelta;
 		if(curbit == lastbit)
 		{
-			rtarget = 255;
+			rtarget = (1<<RESP_PREC)-1;
 			rdelta = RESP_INC;
 		} else {
 			rtarget = 0;
 			rdelta = RESP_DEC;
 		}
 
-		int nresponse = response + ((rdelta * (rtarget - response) + 128)>>8);
-		if(nresponse == response && response != rtarget)
+		int nresponse = response;
+		if(response != rtarget)
 			nresponse += (curbit == lastbit ? 1 : -1);
+
+		if(RESP_PREC > 8)
+		{
+			if(nresponse < (2<<(RESP_PREC-8)))
+				nresponse = (2<<(RESP_PREC-8));
+		}
 
 		response = nresponse;
 		lastbit = curbit;
