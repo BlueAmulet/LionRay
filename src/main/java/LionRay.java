@@ -1,3 +1,4 @@
+
 // LionRay: wav to DFPWM converter
 // by Gamax92
 
@@ -110,6 +111,7 @@ public class LionRay extends JFrame {
 
 		dfpwmNew = new JCheckBox("DFPWM1a", true);
 		dfpwmNew.addActionListener(new checkboxListener());
+		dfpwmNew.setToolTipText("Uncheck for MC1.7.10");
 
 		JButton buttonConvert = new JButton("Convert");
 		buttonConvert.addActionListener(new convertListener());
