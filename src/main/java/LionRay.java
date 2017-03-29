@@ -30,7 +30,7 @@ public class LionRay extends JFrame {
 			String outputPath = args.length > 1 ? args[1] : (inputPath + ".dfpwm");
 
 			try {
-				convert(inputPath, outputPath);
+				convert(inputPath, outputPath, true);
 			} catch (UnsupportedAudioFileException e) {
 				System.err.println("Audio format unsupported");
 				return;
@@ -44,7 +44,7 @@ public class LionRay extends JFrame {
 		}
 	}
 
-	public static void convert(String inputFilename, String outputFilename) throws UnsupportedAudioFileException, IOException {
+	public static void convert(String inputFilename, String outputFilename, boolean dfpwmNew) throws UnsupportedAudioFileException, IOException {
 		AudioFormat convertFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sampleRate, 8, 1, 1, sampleRate, false);
 		AudioInputStream unconverted = AudioSystem.getAudioInputStream(new File(inputFilename));
 		AudioInputStream inFile = AudioSystem.getAudioInputStream(convertFormat, unconverted);
@@ -52,7 +52,7 @@ public class LionRay extends JFrame {
 
 		byte[] readBuffer = new byte[1024];
 		byte[] outBuffer = new byte[1024 / 8];
-		DFPWM converter = new DFPWM();
+		DFPWM converter = new DFPWM(dfpwmNew);
 
 		int read;
 		while ((read = inFile.read(readBuffer)) > 0) {
@@ -63,9 +63,11 @@ public class LionRay extends JFrame {
 	}
 
 	public static JTextField textInputFile, textOutputFile;
+	public static JSpinner textRate;
+	public static JCheckBox dfpwmNew;
+
 	private Container pane;
 	private GridBagConstraints c;
-	public static JSpinner textRate;
 
 	private void addCtrl(int x, int y, Component something) {
 		c.gridx = x;
@@ -98,6 +100,9 @@ public class LionRay extends JFrame {
 		textRate.setEditor(new JSpinner.NumberEditor(textRate, "#"));
 		textRate.setValue(sampleRate);
 
+		dfpwmNew = new JCheckBox("DFPWM1a", true);
+		dfpwmNew.addActionListener(new checkboxListener());
+
 		JButton buttonConvert = new JButton("Convert");
 		buttonConvert.addActionListener(new convertListener());
 
@@ -116,8 +121,8 @@ public class LionRay extends JFrame {
 		addCtrl(1, 1, textOutputFile);
 		addCtrl(2, 1, buttonBrowseOutput);
 		addCtrl(0, 2, labelRate);
-		c.gridwidth = 2;
 		addCtrl(1, 2, textRate);
+		addCtrl(2, 2, dfpwmNew);
 		c.gridwidth = 3;
 		addCtrl(0, 3, buttonConvert);
 
@@ -205,6 +210,17 @@ class outputBrowseListener implements ActionListener {
 	}
 }
 
+class checkboxListener implements ActionListener {
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		int rate = (Integer) LionRay.textRate.getValue();
+		if (LionRay.dfpwmNew.isSelected())
+			LionRay.textRate.setValue(((Double) (rate * 48000D / 32768D + 0.5D)).intValue());
+		else
+			LionRay.textRate.setValue(((Double) (rate * 32768D / 48000D + 0.5D)).intValue());
+	}
+}
+
 class convertListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -213,9 +229,10 @@ class convertListener implements ActionListener {
 			JOptionPane.showMessageDialog(null, "Sample rate cannot be negative");
 			return;
 		}
-		if ((Integer) LionRay.textRate.getValue() < 8192)
+		int baseRate = LionRay.dfpwmNew.isSelected() ? 48000 : 32768;
+		if ((Integer) LionRay.textRate.getValue() < (baseRate / 4))
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too low for Computronics");
-		if ((Integer) LionRay.textRate.getValue() > 65536)
+		if ((Integer) LionRay.textRate.getValue() > (baseRate * 2))
 			JOptionPane.showMessageDialog(null, "Warning, sample rate too high for Computronics");
 
 		if (LionRay.textInputFile.getText().trim().equals(""))
@@ -230,7 +247,7 @@ class convertListener implements ActionListener {
 			JOptionPane.showMessageDialog(null, "Output file is a directory");
 		else {
 			try {
-				LionRay.convert(LionRay.textInputFile.getText(), LionRay.textOutputFile.getText());
+				LionRay.convert(LionRay.textInputFile.getText(), LionRay.textOutputFile.getText(), LionRay.dfpwmNew.isSelected());
 			} catch (UnsupportedAudioFileException e1) {
 				JOptionPane.showMessageDialog(null, "Audio format unsupported");
 				return;

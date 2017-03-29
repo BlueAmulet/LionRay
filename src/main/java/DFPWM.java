@@ -10,10 +10,10 @@ also the main() function takes unsigned 8-bit data and converts it to suit
 
 public class DFPWM
 {
-	private final int RESP_INC = 1;
-	private final int RESP_DEC = 1;
-	private final int RESP_PREC = 10;
-	private final int LPF_STRENGTH = 140;
+	private final int RESP_INC;
+	private final int RESP_DEC;
+	private final int RESP_PREC;
+	private final int LPF_STRENGTH;
 
 	private int response = 0;
 	private int level = 0;
@@ -22,7 +22,22 @@ public class DFPWM
 	private int flastlevel = 0;
 	private int lpflevel = 0;
 
-	public DFPWM() {}
+	private final boolean dfpwm_old;
+
+	public DFPWM(boolean newdfpwm) {
+		dfpwm_old = !newdfpwm;
+		if (newdfpwm) {
+			RESP_INC = 1;
+			RESP_DEC = 1;
+			RESP_PREC = 10;
+			LPF_STRENGTH = 140;
+		} else {
+			RESP_INC = 7;
+			RESP_DEC = 20;
+			RESP_PREC = 8;
+			LPF_STRENGTH = 100;
+		}
+	}
 
 	private void ctx_update(boolean curbit)
 	{
@@ -42,8 +57,8 @@ public class DFPWM
 			rdelta = RESP_DEC;
 		}
 
-		int nresponse = response;
-		if(response != rtarget)
+		int nresponse = response + (dfpwm_old ? ((rdelta * (rtarget - response) + 128)>>8) : 0);
+		if(nresponse == response && response != rtarget)
 			nresponse += (curbit == lastbit ? 1 : -1);
 
 		if(RESP_PREC > 8)
@@ -113,8 +128,8 @@ public class DFPWM
 		byte[] pcmout = new byte[1024];
 		byte[] cmpdata = new byte[128];
 
-		DFPWM incodec = new DFPWM();
-		DFPWM outcodec = new DFPWM();
+		DFPWM incodec = new DFPWM(true);
+		DFPWM outcodec = new DFPWM(true);
 
 		if(mode == 0)
 		{
