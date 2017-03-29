@@ -20,8 +20,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 
 @SuppressWarnings("serial")
-public class LionRay extends JFrame
-{
+public class LionRay extends JFrame {
 	public static int sampleRate = 48000;
 	public static LionRay LionRayJFrame;
 
@@ -29,7 +28,7 @@ public class LionRay extends JFrame
 		if (args.length > 0) { // called with params, CLI assumed
 			String inputPath = args[0];
 			String outputPath = args.length > 1 ? args[1] : (inputPath + ".dfpwm");
-			
+
 			try {
 				convert(inputPath, outputPath);
 			} catch (UnsupportedAudioFileException e) {
@@ -52,13 +51,13 @@ public class LionRay extends JFrame
 		BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(outputFilename));
 
 		byte[] readBuffer = new byte[1024];
-		byte[] outBuffer = new byte[1024/8];
+		byte[] outBuffer = new byte[1024 / 8];
 		DFPWM converter = new DFPWM();
 
 		int read;
 		while ((read = inFile.read(readBuffer)) > 0) {
-			converter.compress(outBuffer, readBuffer, 0, 0, read/8);
-		    outFile.write(outBuffer, 0, read/8);
+			converter.compress(outBuffer, readBuffer, 0, 0, read / 8);
+			outFile.write(outBuffer, 0, read / 8);
 		}
 		outFile.close();
 	}
@@ -106,7 +105,7 @@ public class LionRay extends JFrame
 		pane.setLayout(new GridBagLayout());
 		c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.insets = new Insets(2,2,2,2);
+		c.insets = new Insets(2, 2, 2, 2);
 
 		addCtrl(0, 0, labelInputFile);
 		c.weightx = 0.5;
@@ -124,7 +123,7 @@ public class LionRay extends JFrame
 
 		setTitle("LionRay Wav Converter");
 		pack();
-		setSize(400,getSize().height);
+		setSize(400, getSize().height);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -134,71 +133,75 @@ public class LionRay extends JFrame
 class inputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-    if(System.getProperty("os.name").startsWith("Windows")) {
-      JFileChooser fileChooser = new JFileChooser(".");
-      fileChooser.setFileFilter(new FileNameExtensionFilter("Wavesound files (.wav)", "wav"));
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			JFileChooser fileChooser = new JFileChooser(".");
+			fileChooser.setFileFilter(new FileNameExtensionFilter("Wavesound files (.wav)", "wav"));
 
-      fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
-      fileChooser.setDialogTitle("Select .wav file to convert");
+			fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
+			fileChooser.setDialogTitle("Select .wav file to convert");
 
-      int openChoice = fileChooser.showOpenDialog(LionRay.LionRayJFrame);
+			int openChoice = fileChooser.showOpenDialog(LionRay.LionRayJFrame);
 
-      if(openChoice == JFileChooser.APPROVE_OPTION) {
-        File filename = fileChooser.getSelectedFile();
-        if(filename == null)
-          return;
-        LionRay.textInputFile.setText(filename.getAbsolutePath());
-      }
-    } else {
-      FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select .wav file to convert", FileDialog.LOAD);
-      fileChooser.setFilenameFilter(new FilenameFilter(){
-        @Override
-        public boolean accept(File dir, String name) { return name.endsWith(".wav"); }
-      });
-      fileChooser.setDirectory(".");
-      fileChooser.setVisible(true);
-      File[] filename = fileChooser.getFiles();
-      if(filename.length == 0)
-        return;
-      LionRay.textInputFile.setText(filename[0].getAbsolutePath());
-    }
+			if (openChoice == JFileChooser.APPROVE_OPTION) {
+				File filename = fileChooser.getSelectedFile();
+				if (filename == null)
+					return;
+				LionRay.textInputFile.setText(filename.getAbsolutePath());
+			}
+		} else {
+			FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select .wav file to convert", FileDialog.LOAD);
+			fileChooser.setFilenameFilter(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".wav");
+				}
+			});
+			fileChooser.setDirectory(".");
+			fileChooser.setVisible(true);
+			File[] filename = fileChooser.getFiles();
+			if (filename.length == 0)
+				return;
+			LionRay.textInputFile.setText(filename[0].getAbsolutePath());
+		}
 	}
 }
 
 class outputBrowseListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-    if(System.getProperty("os.name").startsWith("Windows")) {
-      JFileChooser fileChooser = new JFileChooser(".");
-      fileChooser.setFileFilter(new FileNameExtensionFilter("DFPWM files (.dfpwm)", "dfpwm"));
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			JFileChooser fileChooser = new JFileChooser(".");
+			fileChooser.setFileFilter(new FileNameExtensionFilter("DFPWM files (.dfpwm)", "dfpwm"));
 
-      fileChooser.setSelectedFile(new File(LionRay.textInputFile.getText().replaceFirst("\\.\\w+$", "")));
-      fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
-      fileChooser.setDialogTitle("Select output file");
+			fileChooser.setSelectedFile(new File(LionRay.textInputFile.getText().replaceFirst("\\.\\w+$", "")));
+			fileChooser.getActionMap().get("viewTypeDetails").actionPerformed(null);
+			fileChooser.setDialogTitle("Select output file");
 
-      int saveChoice = fileChooser.showSaveDialog(LionRay.LionRayJFrame);
+			int saveChoice = fileChooser.showSaveDialog(LionRay.LionRayJFrame);
 
-      if(saveChoice == JFileChooser.APPROVE_OPTION) {
-        File filename = fileChooser.getSelectedFile();
-        if(filename == null)
-          return;
-        if(!filename.getAbsolutePath().matches(".+\\.dfpwm$"))
-          filename = new File(filename.getAbsolutePath() + ".dfpwm");
-        LionRay.textOutputFile.setText(filename.getAbsolutePath());
-      }
-    } else {
-      FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select output file", FileDialog.SAVE);
-      fileChooser.setFilenameFilter(new FilenameFilter(){
-        @Override
-        public boolean accept(File dir, String name) { return name.endsWith(".dfpwm"); }
-      });
-      fileChooser.setDirectory(".");
-      fileChooser.setVisible(true);
-      File[] filename = fileChooser.getFiles();
-      if(filename.length == 0)
-        return;
-      LionRay.textOutputFile.setText(filename[0].getAbsolutePath());
-    }
+			if (saveChoice == JFileChooser.APPROVE_OPTION) {
+				File filename = fileChooser.getSelectedFile();
+				if (filename == null)
+					return;
+				if (!filename.getAbsolutePath().matches(".+\\.dfpwm$"))
+					filename = new File(filename.getAbsolutePath() + ".dfpwm");
+				LionRay.textOutputFile.setText(filename.getAbsolutePath());
+			}
+		} else {
+			FileDialog fileChooser = new FileDialog(LionRay.LionRayJFrame, "Select output file", FileDialog.SAVE);
+			fileChooser.setFilenameFilter(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".dfpwm");
+				}
+			});
+			fileChooser.setDirectory(".");
+			fileChooser.setVisible(true);
+			File[] filename = fileChooser.getFiles();
+			if (filename.length == 0)
+				return;
+			LionRay.textOutputFile.setText(filename[0].getAbsolutePath());
+		}
 	}
 }
 
