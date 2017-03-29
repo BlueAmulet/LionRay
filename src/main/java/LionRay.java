@@ -40,6 +40,14 @@ public class LionRay extends JFrame {
 			}
 		} else {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			if (!UIManager.getLookAndFeel().isNativeLookAndFeel()) {
+				for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+					if (info.getClassName().equals("com.sun.java.swing.plaf.gtk.GTKLookAndFeel")) {
+						UIManager.setLookAndFeel(info.getClassName());
+						break;
+					}
+				}
+			}
 			LionRayJFrame = new LionRay();
 		}
 	}
