@@ -117,19 +117,23 @@ public class DFPWM
 	public static void main(String[] args) throws Exception // FUCK THE POLICE
 	{
 		int mode = 0;
-		if(args.length >= 1)
+		boolean newcodec = true;
+		for(int i = 0; i < args.length; i++)
 		{
-			if(args[0].equals("-e"))
+			String arg = args[i];
+			if(arg.equals("-e"))
 				mode = 1;
-			else if(args[0].equals("-d"))
+			else if(arg.equals("-d"))
 				mode = 2;
+			else if(arg.equals("-o"))
+				newcodec = false;
 		}
 		byte[] pcmin = new byte[1024];
 		byte[] pcmout = new byte[1024];
 		byte[] cmpdata = new byte[128];
 
-		DFPWM incodec = new DFPWM(true);
-		DFPWM outcodec = new DFPWM(true);
+		DFPWM incodec = new DFPWM(newcodec);
+		DFPWM outcodec = new DFPWM(newcodec);
 
 		if(mode == 0)
 		{
