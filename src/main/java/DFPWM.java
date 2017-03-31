@@ -135,52 +135,55 @@ public class DFPWM
 		DFPWM incodec = new DFPWM(newcodec);
 		DFPWM outcodec = new DFPWM(newcodec);
 
+		int ctr;
 		if(mode == 0)
 		{
-			while(true)
+			do
 			{
-				for(int ctr = 0; ctr < 1024;)
+				for(ctr = 0; ctr < 1024;)
 				{
 					int amt = System.in.read(pcmin, ctr, 1024-ctr);
-					if(amt == -1) return;
+					if(amt == -1) break;
 					ctr += amt;
 				}
-				for(int i = 0; i < 1024; i++)
+				ctr &= ~0x07;
+				for(int i = 0; i < ctr; i++)
 					pcmin[i] ^= (byte)0x80;
-				incodec.compress(cmpdata, pcmin, 0, 0, 128);
-				outcodec.decompress(pcmout, cmpdata, 0, 0, 128);
-				for(int i = 0; i < 1024; i++)
+				incodec.compress(cmpdata, pcmin, 0, 0, ctr/8);
+				outcodec.decompress(pcmout, cmpdata, 0, 0, ctr/8);
+				for(int i = 0; i < ctr; i++)
 					pcmout[i] ^= (byte)0x80;
-				System.out.write(pcmout, 0, 1024);
-			}
+				System.out.write(pcmout, 0, ctr);
+			} while(ctr == 1024);
 		} else if(mode == 1) {
-			while(true)
+			do
 			{
-				for(int ctr = 0; ctr < 1024;)
+				for(ctr = 0; ctr < 1024;)
 				{
 					int amt = System.in.read(pcmin, ctr, 1024-ctr);
-					if(amt == -1) return;
+					if(amt == -1) break;
 					ctr += amt;
 				}
-				for(int i = 0; i < 1024; i++)
+				ctr &= ~0x07;
+				for(int i = 0; i < ctr; i++)
 					pcmin[i] ^= (byte)0x80;
-				incodec.compress(cmpdata, pcmin, 0, 0, 128);
-				System.out.write(cmpdata, 0, 128);
-			}
+				incodec.compress(cmpdata, pcmin, 0, 0, ctr/8);
+				System.out.write(cmpdata, 0, ctr/8);
+			} while(ctr == 1024);
 		} else if(mode == 2) {
-			while(true)
+			do
 			{
-				for(int ctr = 0; ctr < 128;)
+				for(ctr = 0; ctr < 128;)
 				{
 					int amt = System.in.read(cmpdata, ctr, 128-ctr);
-					if(amt == -1) return;
+					if(amt == -1) break;
 					ctr += amt;
 				}
-				outcodec.decompress(pcmout, cmpdata, 0, 0, 128);
-				for(int i = 0; i < 1024; i++)
+				outcodec.decompress(pcmout, cmpdata, 0, 0, ctr);
+				for(int i = 0; i < ctr*8; i++)
 					pcmout[i] ^= (byte)0x80;
-				System.out.write(pcmout, 0, 1024);
-			}
+				System.out.write(pcmout, 0, ctr*8);
+			} while(ctr == 128);
 		}
 	}
 }
