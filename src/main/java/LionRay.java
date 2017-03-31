@@ -60,14 +60,20 @@ public class LionRay extends JFrame {
 		BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(outputFilename));
 
 		byte[] readBuffer = new byte[1024];
-		byte[] outBuffer = new byte[1024 / 8];
+		byte[] outBuffer = new byte[readBuffer.length / 8];
 		DFPWM converter = new DFPWM(dfpwmNew);
 
 		int read;
-		while ((read = inFile.read(readBuffer)) > 0) {
+		do {
+			for(read = 0; read < readBuffer.length;) {
+				int amt = inFile.read(readBuffer, read, readBuffer.length - read);
+				if(amt == -1) break;
+				read += amt;
+			}
+			read &= ~0x07;
 			converter.compress(outBuffer, readBuffer, 0, 0, read / 8);
 			outFile.write(outBuffer, 0, read / 8);
-		}
+		} while(read == readBuffer.length);
 		outFile.close();
 	}
 
