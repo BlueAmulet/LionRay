@@ -53,11 +53,10 @@ public class LionRay extends JFrame {
 		}
 	}
 
-	public static void convert(String inputFilename, String outputFilename, boolean dfpwmNew) throws UnsupportedAudioFileException, IOException {
+	public static void convert(String inputFilename, BufferedOutputStream outputStream, boolean dfpwmNew) throws UnsupportedAudioFileException, IOException {
 		AudioFormat convertFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sampleRate, 8, 1, 1, sampleRate, false);
 		AudioInputStream unconverted = AudioSystem.getAudioInputStream(new File(inputFilename));
 		AudioInputStream inFile = AudioSystem.getAudioInputStream(convertFormat, unconverted);
-		BufferedOutputStream outFile = new BufferedOutputStream(new FileOutputStream(outputFilename));
 
 		byte[] readBuffer = new byte[1024];
 		byte[] outBuffer = new byte[readBuffer.length / 8];
@@ -72,9 +71,14 @@ public class LionRay extends JFrame {
 			}
 			read &= ~0x07;
 			converter.compress(outBuffer, readBuffer, 0, 0, read / 8);
-			outFile.write(outBuffer, 0, read / 8);
+			outputStream.write(outBuffer, 0, read / 8);
 		} while(read == readBuffer.length);
-		outFile.close();
+	}
+	
+	public static void convert(String inputFilename, String outputFilename, boolean dfpwmNew) throws UnsupportedAudioFileException, IOException {
+		BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFilename));
+		convert(inputFilename, outputStream, dfpwmNew);
+		outputStream.close();
 	}
 
 	public static JTextField textInputFile, textOutputFile;
